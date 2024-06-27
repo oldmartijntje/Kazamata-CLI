@@ -1,0 +1,12 @@
+{
+  "name": "kazamata-cli",
+  "version": "1.0.0",
+  "description": "A CLI tool for https://github.com/oldmartijntje/Project-Kazamata",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
