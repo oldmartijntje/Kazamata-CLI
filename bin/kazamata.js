@@ -3,7 +3,7 @@
 const DEMO_URL = 'oldmartijntje/Project-Kazamata'
 const BASE_URL = 'oldmartijntje/Project-Kazamata'
 const ALLOW_DEMO = false
-const CANCELL_IF_FOLDER_HAS = ['index.html', 'package.json'] // make empty to skip this check
+const CANCELL_IF_FOLDER_HAS = ['index.html', 'package.json', 'main.js', 'config.js', 'vite.config.js'] // make empty to skip this check
 
 const { Command } = require('commander');
 const axios = require('axios');
