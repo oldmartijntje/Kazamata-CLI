@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 
+const DEMO_URL = 'oldmartijntje/Project-Kazamata'
+const BASE_URL = 'oldmartijntje/Project-Kazamata'
+const ALLOW_DEMO = false
+const CANCELL_IF_FOLDER_HAS = ['index.html', 'package.json'] // make empty to skip this check
+
 const { Command } = require('commander');
 const axios = require('axios');
 const tar = require('tar');
 const fs = require('fs');
 const path = require('path');
-
 const program = new Command();
 
 // Function to download and extract a GitHub release
@@ -33,17 +37,38 @@ async function extractTarball(tarballPath, extractPath) {
     });
 }
 
+// Ensure the directory exists before extracting the tarball
+async function ensureDirectoryExists(directory) {
+    return fs.promises.mkdir(directory, { recursive: true });
+}
+
 program
     .command('new <app-name>')
     .option('--demo-app', 'Create demo app')
     .action(async (appName, options) => {
-        const repo = options.demo_app ? 'your-username/your-demo-repo' : 'oldmartijntje/Project-Kazamata';
+        if (options.demoApp && !ALLOW_DEMO) {
+            console.log('Demo app does not exist yet. Cancelling...');
+            return;
+        }
+
+        if (fs.existsSync(appName) && CANCELL_IF_FOLDER_HAS.length > 0) {
+            const files = fs.readdirSync(appName)
+            for (const file of files) {
+                if (CANCELL_IF_FOLDER_HAS.includes(file)) {
+                    console.log('Detected existing project. Cancelling...');
+                    return;
+                }
+            }
+        }
+
+        const repo = options.demoApp ? DEMO_URL : BASE_URL;
         const dest = path.resolve(__dirname, `${appName}.tgz`);
         const extractPath = path.resolve(process.cwd(), appName);
 
         console.log(`Creating a new project in ${extractPath}...`);
 
         try {
+            await ensureDirectoryExists(extractPath);
             await downloadRelease(repo, dest);
             await extractTarball(dest, extractPath);
             fs.unlinkSync(dest);
