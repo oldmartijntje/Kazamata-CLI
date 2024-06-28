@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 const CLI_VERSION = '1.1.0'
-const OLDEST_COMPATIBLE_KAZAMATA_VERSION = '1.2.0'
+const OLDEST_COMPATIBLE_KAZAMATA_VERSION = '1.2.0' // if the kazamata version is lower, it's incompatible.
 
 const DEMO_URL = 'oldmartijntje/Project-Kazamata'
 const BASE_URL = 'oldmartijntje/Project-Kazamata'
 const ALLOW_DEMO = false
 const CANCELL_IF_FOLDER_HAS = ['index.html', 'package.json', 'main.js', 'config.js', 'vite.config.js'] // make empty to skip this check
 // const CANCELL_IF_FOLDER_HAS = []
+const GENERATABLE_TYPES = ['gameobject']
 
 const { Command } = require('commander');
 const axios = require('axios');
@@ -30,6 +31,20 @@ async function warn(message) {
 async function error(message) {
     const chalk = (await import('chalk')).default;
     console.log(chalk.bgRed.black(' ERROR ') + ' ' + chalk.red(message));
+}
+
+async function ask(question) {
+    const readline = require('readline').createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        readline.question(question, (answer) => {
+            readline.close();
+            resolve(answer);
+        });
+    });
 }
 
 // Function to download and extract a GitHub release
@@ -155,8 +170,15 @@ program
 
 program
     .command('generate <type> <name>')
-    .action(async (type, name) => {
+    .description('Generate a new component')
+    .option('--route-name <customName>', 'Have the route name be different from the component name.')
+    .action(async (type, name, options) => {
+        let routeName = options.routeName ? options.routeName : name;
         const extractPath = process.cwd();
+        if (!GENERATABLE_TYPES.includes(type.toLocaleLowerCase())) {
+            await error(`Type ${type} is not recognised.`);
+            return;
+        }
         let kazamataJson;
         try {
             kazamataJson = require(path.resolve(extractPath, 'kazamata.json'));
@@ -164,9 +186,24 @@ program
             await error('This directory is not a Kazamata project.\n\n' + errorMsg);
             return
         }
+
+        if (Object.keys(kazamataJson["routes"]).includes(routeName)) {
+            await warn(`A component with the name ${routeName} already exists, it's recommended to use a different name.`);
+            input = await ask('Do you want to continue? (y/n)');
+            if (input.toLowerCase() !== 'y') {
+                await error('Generation cancelled.');
+                return;
+            } else {
+                console.log('Continuing...');
+            }
+            return;
+        }
+
+
+
         const neededVersion = kazamataJson['kazamata-cli']['oldest-compatible-version']
         const version = kazamataJson['version']
-        console.log(`Generating ${type} named ${name}...`);
+        console.log(`Generating ${type} named ${routeName}...`);
 
         if (!compatibleVersion(CLI_VERSION, neededVersion)) {
             await warn(`This Kazamata project is not compatible with the current Kazamata-CLI version (v${CLI_VERSION}), it needs CLI v${neededVersion}+. Please update your CLI version.\nDo \`npm install -g kazamata-cli@latest\` to update your CLI version.`);
