@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const CLI_VERSION = '1.1.0'
-const OLDEST_COMPATIBLE_KAZAMATA_VERSION = '1.1.3'
+const OLDEST_COMPATIBLE_KAZAMATA_VERSION = '1.2.0'
 
 const DEMO_URL = 'oldmartijntje/Project-Kazamata'
 const BASE_URL = 'oldmartijntje/Project-Kazamata'
