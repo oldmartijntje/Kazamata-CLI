@@ -1,0 +1,36 @@
+name: Publish Library
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org/'
+
+      - name: Install dependencies
+        run: npm install
+
+      - run: npm ci
+
+      - name: Update package.json version
+        run: |
+          TAG_VERSION=$(echo "${GITHUB_REF}" | sed -n 's/refs\/tags\/v\(.*\)/\1/p')
+          echo "Tag version: $TAG_VERSION"
+          npm --no-git-tag-version version "$TAG_VERSION"
+          echo "Updated package.json version to $TAG_VERSION"
+
+      - name: Publish package to GitHub Packages
+        run: |
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

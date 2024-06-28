@@ -15,6 +15,7 @@
         "tar": "^7.4.0"
     },
     "bin": {
-        "kazamata": "./bin/kazamata.js"
-    }
+        "kazamata": "bin/kazamata.js"
+    },
+    "private": false
 }
